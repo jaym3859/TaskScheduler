@@ -200,29 +200,16 @@ void worker() {
         }
     }
 }
-/*
-std::shared_ptr<BaseTask> get_next_task() {
-    // This method can be simplified to just retrieve a task if available
-    for (auto& bin : priority_bins_) {
-        if (!bin.empty()) {
-            auto task = bin.front();
-            bin.pop();  // Remove the task from the bin
-            return task;
-        }
-    }
-    return nullptr;
-}
-*/
 
-    bool all_queues_empty() {
+bool all_queues_empty() {
         for (const auto& bin : priority_bins_) {
             if (!bin.empty()) return false;
         }
         return true;
     }
 
-    void assign_task_to_thread() {
-        // Try to assign a task to an idle thread
+ void assign_task_to_thread() {
+    // Try to assign a task to an idle thread
         for (auto& thread : task_threads_) {
             // Check if the thread is in POOLING state (idle and ready for tasks)
             if (thread->get_status() == Status::POOLING) {
