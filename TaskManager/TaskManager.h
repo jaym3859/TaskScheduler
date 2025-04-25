@@ -11,9 +11,11 @@ public:
     ~TaskManager() = default;
 
     // Singleton accessor
-    static std::shared_ptr<TaskScheduler> GetScheduler();
-    static std::shared_ptr<std::unordered_map<std::thread::id, std::shared_ptr<T_Thread>>>  GetThreadMap();
+    static std::shared_ptr<TaskScheduler> Scheduler();
+    static std::shared_ptr<GameTimer> Clock();
+    static std::shared_ptr<std::unordered_map<std::thread::id, std::shared_ptr<T_Thread>>>  ThreadMap();
 private:
+    static std::mutex mutex_;
     static std::shared_ptr<TaskScheduler> task_scheduler_;  // The singleton TaskScheduler instance
 };
 

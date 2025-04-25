@@ -22,13 +22,13 @@ public:
     virtual ~Event() = default;  // Virtual destructor
 
     // Subscribe a listener to the event
-    virtual void subscribe(std::shared_ptr<Listener> listener);
+    virtual void Subscribe(std::shared_ptr<Listener> listener);
 
     // Set a callback to be triggered when the event is notified
-    virtual void set_callback(std::function<void()> callback);
+    virtual void SetCallback(std::function<void()> callback);
 
     // Notify all listeners and trigger the callback if defined
-    void notify() const;
+    void Notify() const;
 
     // Abstract method for getting the event type (each event will provide its own type)
     virtual std::string get_event_type() const = 0;

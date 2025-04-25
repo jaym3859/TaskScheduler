@@ -1,25 +1,25 @@
 #include "Entity.h"
-Entity::Entity() { set_id(generate_uuid()); }
+Entity::Entity() { SetID(GenerateUUID()); }
 
-std::string Entity::get_id() const {
-    return object_id_;
+std::string Entity::GetID() const {
+    return objectID;
 }
 
 bool Entity::operator==(const Entity& other) const {
-    return object_id_ == other.object_id_;
+    return objectID == other.objectID;
 }
 
 bool Entity::operator!=(const Entity& other) const {
-    return object_id_ != other.object_id_;
+    return objectID != other.objectID;
 }
-void Entity::set_id(const std::string& id) { object_id_ = id; }
+void Entity::SetID(const std::string& id) { objectID = id; }
 /*
-boost::uuids::uuid Object::generate_uuid() {
+boost::uuids::uuid CollisionObject::GenerateUUID() {
     boost::uuids::random_generator generator;
     return generator();  // Generates a new random UUID
 }
 */
-std::string Entity::generate_uuid() {
+std::string Entity::GenerateUUID() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 15); // Hex digits (0 to F)

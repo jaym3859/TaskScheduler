@@ -7,11 +7,11 @@ ConfigLoader::ConfigLoader(const std::string& file_path) {
         std::istringstream iss(line);
         std::string key, value;
         if (std::getline(iss, key, '=') && std::getline(iss, value)) {
-            config_map_[key] = value;
+            configMap[key] = value;
         }
     }
 }
 
-std::string ConfigLoader::get(const std::string& key) {
-    return config_map_[key];
+std::string ConfigLoader::Get(const std::string& key) {
+    return configMap[key];
 }

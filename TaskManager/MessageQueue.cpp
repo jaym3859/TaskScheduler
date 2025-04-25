@@ -1,40 +1,39 @@
-#pragma once
 #include "MessageQueue.h"
-// Copy constructor
+
 MessageQueue::MessageQueue(const MessageQueue& other) {
-    std::lock_guard<std::mutex> lock_this(mtx_);  // Lock this queue's mutex
+    std::lock_guard<std::mutex> lock_this(queueMtx);  // Lock this queue's mutex
 
     // Copy the contents of the queue
-    queue_ = other.queue_;
+    queue = other.queue;
 }
 
-// Assignment operator
 MessageQueue& MessageQueue::operator=(const MessageQueue& other) {
     if (this != &other) {  // Self-assignment check
-        std::lock_guard<std::mutex> lock_this(mtx_);  // Lock this queue's mutex
+        std::lock_guard<std::mutex> lock_this(queueMtx);  // Lock this queue's mutex
 
         // Copy the contents of the queue
-        queue_ = other.queue_;
+        queue = other.queue;
     }
     return *this;
 }
-// Equality operator (compares the contents of the queues)
+
 bool MessageQueue::operator==(const MessageQueue& other) {
-    std::lock_guard<std::mutex> lock_this(mtx_);  // Lock this queue's mutex
+    std::lock_guard<std::mutex> lock_this(queueMtx);  // Lock this queue's mutex
 
     // Compare the contents of both queues by size and element-by-element
-    if (queue_.size() != other.queue_.size()) {
+    if (queue.size() != other.queue.size()) {
         return false;
     }
 
     // Compare element by element
-    auto this_copy = queue_;
-    auto other_copy = other.queue_;
+    auto this_copy = queue;
+    auto other_copy = other.queue;
 
     while (!this_copy.empty() && !other_copy.empty()) {
-        if (this_copy.front() != other_copy.front()) {
+        if (this_copy.front().type != other_copy.front().type) {
             return false;
         }
+
         this_copy.pop();
         other_copy.pop();
     }
@@ -42,32 +41,37 @@ bool MessageQueue::operator==(const MessageQueue& other) {
     return true;
 }
 
-// Inequality operator
 bool MessageQueue::operator!=(const MessageQueue& other) {
-    return !(*this == other);  // Calls the equality operator
+    return !(*this ==(other));
 }
 
 
-// MessageQueue that holds messages to be processed by the main thread
-void MessageQueue::push(Message msg) {
-    std::lock_guard<std::mutex> lock(mtx_);
-    queue_.push(msg);
-    cv_.notify_one();  // Notify one waiting thread
+void MessageQueue::push(const Message& msg) {
+    std::lock_guard<std::mutex> lock(queueMtx);
+    queue.push(msg);
 }
-
 std::optional<Message> MessageQueue::pop() {
-    std::unique_lock<std::mutex> lock(mtx_);
-    cv_.wait(lock, [this] { return !queue_.empty(); });
+    std::unique_lock<std::mutex> lock(queueMtx);
+    cv.wait(lock, [this] { return !queue.empty(); });
 
-    if (!queue_.empty()) {
-        Message msg = queue_.front();
-        queue_.pop();
+    if (!queue.empty()) {
+        Message msg = queue.front();
+        queue.pop();
         return msg;
     }
 
     return std::nullopt;  // Return an empty optional if the queue is empty
 }
+std::optional<Message> MessageQueue::top() {
+    std::unique_lock<std::mutex> lock(queueMtx);
+    cv.wait(lock, [this] { return !queue.empty(); });
 
+    if (!queue.empty()) {
+        return queue.front();
+    }
+
+    return std::nullopt;  // Return an empty optional if the queue is empty
+}
 bool MessageQueue::empty() const {
-    return queue_.empty();
+    return queue.empty();
 }

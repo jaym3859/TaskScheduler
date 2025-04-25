@@ -7,8 +7,8 @@ class ConfigLoader {
 public:
     ConfigLoader(const std::string& file_path);
 
-    std::string get(const std::string& key);
+    std::string Get(const std::string& key);
 
 private:
-    std::unordered_map<std::string, std::string> config_map_;
+    std::unordered_map<std::string, std::string> configMap;
 };

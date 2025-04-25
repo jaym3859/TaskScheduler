@@ -13,16 +13,16 @@ public:
     //destructor 
     virtual ~Entity() = default;
     //return the id as type uuid
-    virtual std::string get_id() const;
+    virtual std::string GetID() const;
     //equality/inequality check on ids
     bool operator==(const Entity& other) const;
     bool operator!=(const Entity& other) const;
 protected:
     // the object id
-    std::string object_id_;  // UUID object as ID
+    std::string objectID;  // UUID object as ID
 private:
     // set the id of the object
-    virtual void set_id(const std::string& id);
+    virtual void SetID(const std::string& id);
     // generate id
-    std::string generate_uuid();
+    std::string GenerateUUID();
 };

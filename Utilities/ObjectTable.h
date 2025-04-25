@@ -12,7 +12,7 @@ public:
     ~ObjectTable() = default;
     bool operator==(const ObjectTable& rhs);
     bool operator!=(const ObjectTable& rhs);
-    Object& operator[](const std::string& key);
+    Sprite& operator[](const std::string& key);
     // Insert object into the table
     template <typename T>
     void insert(std::shared_ptr<T> object);
@@ -24,6 +24,6 @@ public:
   
 private:
     std::mutex table_lock_;
-    std::unordered_map<std::string, std::shared_ptr<Object>> data_;
+    std::unordered_map<std::string, std::shared_ptr<Sprite>> data_;
 };
 

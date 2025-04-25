@@ -15,7 +15,7 @@ Log::~Log() {
     }
 }
 
-void Log::log(log_level level, const std::string& message, std::source_location location) {
+void Log::LogInfo(Log_Level level, const std::string& message, std::source_location location) {
     if (!Log::log_file_.is_open()) {
         std::cerr << "Log file not open, skipping log entry." << std::endl;
         return;
@@ -28,21 +28,21 @@ void Log::log(log_level level, const std::string& message, std::source_location 
     auto local_tp = std::chrono::zoned_time{ std::chrono::current_zone(), tp };
     std::string level_str;
 
-    // Determine the log level string
+    // Determine the LogInfo level string
     switch (level) {
-    case log_level::Info:
+    case Log_Level::Info:
         level_str = "INFO: ";
         break;
-    case log_level::Warning:
+    case Log_Level::Warning:
         level_str = "WARNING: ";
         break;
-    case log_level::Error:
+    case Log_Level::Error:
         level_str = "ERROR: ";
         break;
     }
 
     try {
-        // Write to the log file
+        // Write to the LogInfo file
         log_file_ << "[" << level_str << "] "
             << std::format("{:%F %T %Z}", local_tp)  // Format time
             << " | " << location.file_name()

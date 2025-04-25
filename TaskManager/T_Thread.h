@@ -1,14 +1,16 @@
 #pragma once
-#pragma once
+#include "../Utilities/Logger.h"
 #include "MessageQueue.h"
 #include "Tasks.h"
 
 /// <T_Thread>
-/// T_Thread is an std::thread wrapper with a single worker pool loop 
+/// T_Thread is an std::thread wrapper with a single Worker pool loop 
 /// tthread is not an object since we want to use thread_ID rather than uuid
 /// </T_Thread>
-class T_Thread{
+class T_Thread : public TaskQueue{
 public:
+    static std::vector<std::shared_ptr<T_Thread>> thread_pool;
+
     // Constructor accepts a shared pointer to the message queue
     T_Thread();
     // Non-movable
@@ -16,29 +18,29 @@ public:
     T_Thread& operator=(const T_Thread& other) = delete;
     // Destructor
     ~T_Thread();
-    // Set the task
-    void set_task(std::shared_ptr<BaseTask> task);
+    // Set the task_
+    void set_task(std::shared_ptr<BaseTask> task_);
     //set the message
-    void set_message(Message msg);
+    void SetMessage(Message msg);
     // Stop the thread
     void stop();
+    //pause the thread
+    void pushMsg(const Message& messageIn);
     // Get the thread's status
-    Message get_message();
+    Message GetMsg();
     //get the thread id
-    std::thread::id get_id() const; 
-
+    std::thread::id GetID() const; 
 private:
-
+    bool is_any_thread_idle_or_paused();
     // Worker loop that listens for tasks and messages
-    void worker();
-
-    std::condition_variable pause_cv_;
-    std::mutex results_mutex_;
-    std::mutex pause_mutex_;
-    std::mutex thread_mutex_;  // Mutex for locking
-    std::condition_variable cv_;  // Condition variable to notify the worker thread
+    void Worker();
+    MessageQueue msgQ;
+    std::mutex threadMutex;  // Mutex for locking
+    std::mutex queueMutex;
+    std::condition_variable queueCV;  // Condition variable to Notify the Worker thread
+    std::condition_variable pauseCV;  // Condition variable for pause
     std::shared_ptr<BaseTask> task_;  // Task assigned to this thread
-    Message message_;  // Thread status
-    std::thread t_thread_;  // The actual thread
+    Message message;  // Thread status
+    std::thread t_thread;  // The actual thread
     std::any result_;  //the last result 
 };

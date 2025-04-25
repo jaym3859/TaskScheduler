@@ -3,8 +3,8 @@
 #include <functional>
 #include <any>
 #include <future>
-#include "Entity.h"
-#include "Logger.h"
+#include "..\Utilities\Entity.h"
+#include "..\Utilities\Logger.h"
 
 
 enum class PriorityLevel {
@@ -20,7 +20,7 @@ enum class PriorityLevel {
 
 
 /// <BaseTask>
-///  BaseTask is a pure virtual base class of a Task
+///  BaseTask is a partial virtual base class of a Task
 /// </BaseTask>
 class BaseTask : public Entity {
 public:
@@ -28,24 +28,24 @@ public:
     virtual BaseTask operator=(const BaseTask& other) = delete; //non movable
     BaseTask(const BaseTask& other) = delete; //non movable
     virtual ~BaseTask() = default; //default destructor 
-    virtual void execute() = 0; //execute the task
-    virtual void pause_task(); 
-    virtual void resume_task();
-    virtual void set_priority(const PriorityLevel& priority_in); //set priority level
-    virtual PriorityLevel get_priority(); //return the tasks priority level
-    virtual void set_completed(); //set the task as completed
-    virtual bool is_completed(); //return if the task is completed or not
-    virtual bool is_paused();//return if the task is paused
+    virtual void Execute() = 0; //Execute the task_
+    virtual void PauseTask(); 
+    virtual void ResumeTask();
+    virtual void SetPriority(const PriorityLevel& priority_in); //set priority level
+    virtual PriorityLevel GetPriority(); //return the tasks priority level
+    virtual void SetCompleted(); //set the task_ as completed
+    virtual bool IsCompleted(); //return if the task_ is completed or not
+    virtual bool IsPaused();//return if the task_ is paused
 protected:
-    PriorityLevel priority_ = PriorityLevel::NORMAL; //the priority level of the task
+    PriorityLevel priority_ = PriorityLevel::NORMAL; //the priority level of the task_
     bool completed_ = false; //flag for whether the taks is completed
     bool paused_ = false;
     std::mutex task_mutex_;
-    std::condition_variable cv_;
+    std::condition_variable cv;
 };
 
 
-//a task that returns data
+//a task_ that returns data
 class Task : public BaseTask {
 public:
     //default constructor 
@@ -53,11 +53,11 @@ public:
     Task(const Task& other) = delete;
     Task& operator=(const Task& other) = delete;
     virtual ~Task() = default;
-    virtual void execute() override;
+    virtual void Execute() override;
 
 private:
 
     static std::vector<std::any> results_; //results
-    static std::mutex results_mutex_;  // Mutex for thread-safety
+    static std::mutex resultsMutex;  // Mutex for thread-safety
     std::function<void()> task_fn_; //the tasks related function
 };

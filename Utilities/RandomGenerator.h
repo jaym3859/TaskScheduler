@@ -6,17 +6,17 @@ public:
         static RandomGenerator instance;
         return instance;
     };
-    RandomGenerator() : engine_(std::random_device{}()) {}
+    RandomGenerator() : engine(std::random_device{}()) {}
     RandomGenerator(const RandomGenerator& other) = delete;
     RandomGenerator& operator=(const RandomGenerator&) = delete;
     ~RandomGenerator() = default;
 
-    int generate_int(int min, int max);
+    int GenerateInt(int min, int max);
  
 
-    double generate_double(double min, double max);
+    double GenerateDouble(double min, double max);
   
 
 private:
-    std::default_random_engine engine_;
+    std::default_random_engine engine;
 };

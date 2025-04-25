@@ -8,86 +8,88 @@
 #include <vector>
 #include <mutex>
 #include <chrono>
-#include "Logger.h"
-#include "Clock.h"
+#include "../Utilities/Logger.h"
 #include "T_Thread.h"
-#include "MessageQueue.h"
 #include "Tasks.h"
+#include "../Utilities/GameTimer.h"
 
-class TaskScheduler {
+class TaskScheduler : public TaskQueue {
 public:
-    //a periodic task 
+                                          
+    //a periodic task_ 
     struct Periodic_Task {
-        std::shared_ptr<BaseTask> task;
-        std::chrono::steady_clock::time_point next_execution_time;  // When to run the task next
-        std::chrono::milliseconds interval;
-        Periodic_Task() : task(nullptr), next_execution_time(std::chrono::steady_clock::now()),
-            interval(0) {
-        };
-        Periodic_Task(std::shared_ptr<BaseTask> task_) : task(task_), next_execution_time(std::chrono::steady_clock::now()),
-            interval(0) {
-        };
-        Periodic_Task(std::shared_ptr<BaseTask> task_, std::chrono::milliseconds interval_) : task(task_), next_execution_time(std::chrono::steady_clock::now()),
-            interval(interval_) {
-        };
-        Periodic_Task(std::shared_ptr<BaseTask> task_, std::chrono::steady_clock::time_point time_point_, std::chrono::milliseconds interval_) : task(task_), next_execution_time(time_point_), interval(interval_) {
-        };
-        ~Periodic_Task() = default;
-        // Check if it's time to trigger the task
-        bool is_time_to_run() const {
-            return std::chrono::steady_clock::now() >= next_execution_time;
+        std::shared_ptr<BaseTask> task_;
+        float nextExecutionTime;  // When to run the task_ next (in seconds)
+        float interval;             // Interval in seconds
+        std::shared_ptr<GameTimer> gameTimer_;  // Pointer to the game timer for accurate timing
+
+        // Default constructor
+        Periodic_Task()
+            : task_(nullptr), nextExecutionTime(0.0f), interval(0.0f), gameTimer_(nullptr) {
         }
 
-        // Update next execution time after running the task
-        void update_execution_time() {
-            next_execution_time += interval;
+        // Parameterized constructor for initializing the task_ with interval and game timer
+        Periodic_Task(std::shared_ptr<BaseTask> task_, float interval_, std::shared_ptr<GameTimer> timer)
+            : task_(task_), interval(interval_), gameTimer_(timer) {
+            nextExecutionTime = gameTimer_->TotalTime();  // Initialize to the current game time
+        }
+
+        // Check if it's time to run the task_ based on TotalTime and interval
+        bool IsTimeToRun() const {
+            float current_time = gameTimer_->TotalTime();
+            // If the current time minus the next execution time exceeds the interval, it's time to run
+            return (current_time - nextExecutionTime) >= interval;
+        }
+
+        // Update the next execution time
+        void UpdateExecutionTime() {
+            nextExecutionTime += interval;  // Add the interval to the next execution time
         }
     };
-
     // Constructor 
     TaskScheduler();
     //destructor 
     ~TaskScheduler();
-    //add a task
-    void add_task(std::shared_ptr<BaseTask> task);
-    // Add a periodic task that executes at fixed intervals
-    void schedule_task(std::shared_ptr<BaseTask> task, size_t interval_ms);
+    //add a task_
+    void AddTask(std::shared_ptr<BaseTask> task_);
+    // Add a periodic task_ that executes at fixed intervals
+    void ScheduleTask(std::shared_ptr<BaseTask> task_, float interval);
     //stop all threads
-    void stop_all();
-    //stop a task
-    void stop_task(const std::string& id);
+    void StopAll();
+    //stop a task_
+    void StopTask(const std::string& id);
 
-    //pause a task
-    void pause_task(std::string id);
-    //resume a task
-    void resume_task(std::string id);
+    //pause a task_
+    void PauseTask(std::string id);
+    //resume a task_
+    void ResumeTask(std::string id);
     //return a pointer to the system scheduler clock to use for timings
-    std::shared_ptr<Clock> get_clock();
-    std::shared_ptr<std::unordered_map<std::thread::id, std::shared_ptr<T_Thread>>> get_thread_map();
+    std::shared_ptr<GameTimer> get_clock();
+        //return a shared pointer to the threadpool map
+    std::shared_ptr<std::unordered_map<std::thread::id, std::shared_ptr<T_Thread>>> GetThreadMap();
 
-    //return a pointer to the message queue
     //posts a message to all threads in the pool
     void PostMessage(const Message& msg);
 private:
-    void worker();
-    bool all_queues_empty();
+    void Worker();
+    bool AllQueuesEmpty();
 
 
     //handle regular tasks
-    void handle_regular_tasks();
+    void HandleRegularTasks();
     //handle periodic tasks
-    void handle_periodic_tasks();
-    //return a thread thats pooling available for a task
+    void HandlePeriodicTasks();
+    //return a thread thats pooling available for a task_
     std::shared_ptr<T_Thread> get_available_thread();
-   
+
     std::unordered_map<std::string, Periodic_Task> scheduled_tasks_; //scheduled tasks mapped
     std::unordered_map<std::thread::id, std::shared_ptr<T_Thread>> thread_pool_; //the thread pool mapped
-    std::shared_ptr<Clock> clock_;  // Add clock to track time
+    std::shared_ptr<GameTimer> clock_;  // Add clock to track time
     std::vector<std::queue<std::shared_ptr<BaseTask>>> priority_bins_;  // priority bins of tasks
-   
-    std::mutex scheduled_tasks_mutex_;      // Mutex for safe task handling
-    std::mutex bins_mutex_;                 // Mutex for priority bins
-    std::condition_variable cv_;            // Condition variable for thread synchronization
-    bool stop_flag_ = false;                // stop flag 
-    std::thread worker_thread_;             // Worker thread
+    MessageQueue global_task_queue;
+    std::mutex scheduledTasksMutex;      // Mutex for safe task_ handling
+    std::mutex binsMutex;                 // Mutex for priority bins
+    std::condition_variable cv;            // Condition variable for thread synchronization
+    bool stopFlag = false;                // stop flag 
+    std::thread workerThread;             // Worker thread
 };
